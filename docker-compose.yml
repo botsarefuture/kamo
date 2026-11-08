@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kamo
+      POSTGRES_USER: kamo
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kamo}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kamo -d kamo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://kamo:${POSTGRES_PASSWORD:-kamo}@db:5432/kamo
+      PORT: 3000
+      BASE_DOMAIN: ${BASE_DOMAIN:-}
+      COOKIE_SECURE: ${COOKIE_SECURE:-0}
+      TRUST_PROXY: ${TRUST_PROXY:-1}
+      ALLOW_ORG_SIGNUP: ${ALLOW_ORG_SIGNUP:-1}
+      APP_SECRET: ${APP_SECRET:-change-this-to-a-long-random-string-2026}
+      MAIL_TRANSPORT: ${MAIL_TRANSPORT:-log}
+      SMTP_HOST: ${SMTP_HOST:-lc-email}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-0}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-no-reply@kamo.local}
+    ports:
+      - "127.0.0.1:3000:3000"
+
+volumes:
+  pgdata:

@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+.research
+.venv-research
+.hallmark/log.json
+test
+README.md
+PLAN.md
